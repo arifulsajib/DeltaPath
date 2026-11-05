@@ -1,0 +1,115 @@
+[
+    {
+        "save_name": "xian_dp_gps",
+        "seed": 2025,
+        "dataset": {
+            "city": "xian",
+            "train_traj_df": "xian_train.h5",
+            "poi_df": "./raw_data/xian.h5",
+            "poi_embed": "./raw_data/xian_poi_embed.npy",
+            "road_embed": "./raw_data/xian_road_embed.npy",
+            "road_neighbors": "xian_road_neighbors_info.npz",
+            "compressed_pretrain_traj_df": "xian_train_compressed_keep-0.h5",
+            "compressed_finetune_traj_df": "xian_train_compressed_keep-5.h5",
+            "val_traj_df": "xian_valid_compressed_keep-5.h5",
+            "test_traj_df": "xian_test_compressed_keep-5.h5"
+        },
+        "delta_clip": {
+            "road_weight": 1,
+            "poi_weight": 1,
+            "pois_dist_thres": 300,
+            "poi_max_neighbors": 10,
+            "road_transW_lambda": 1.0,
+            "poi_distW_lambda": 0.5
+        },
+        "deltapath": {
+            "embed_size": 64,
+            "d_model": 256,
+            "n_layer": 5,
+            "d_state": 32,
+            "headdim": 64,
+            "d_inner": 256,
+            "add_bcdt_item": true,
+            "chunk_size": 64,
+            "use_qk_l2norm": true
+        },
+        "pred_head": {
+            "input_size": 256,
+            "hidden_size": 256,
+            "output_size": 2,
+            "dropout": 0.3,
+            "pred_type": "regression"
+        },
+        "pretrain": {
+            "load": true,
+            "save": true,
+            "dataloader": {
+                "batch_size": 128,
+                "shuffle": true,
+                "num_workers": 0
+            },
+            "padder": {},
+            "config": {
+                "num_epoch_1": 15,
+                "num_epoch_2": 15,
+                "lr_1": 0.001,
+                "lr_2": 0.0001,
+                "MEC_weight": 0.5,
+                "MEC_config": {
+                    "hidden_size": 256,
+                    "n": 5,
+                    "warmup_epoch": 5,
+                    "eps": 512
+                }
+            },
+            "pretrain_save_name": "xian_pretrain"
+        },
+        "finetune": {
+            "load": false,
+            "save": true,
+            "dataloader": {
+                "batch_size": 128,
+                "shuffle": true,
+                "num_workers": 0
+            },
+            "val_dataloader": {
+                "batch_size": 128,
+                "num_workers": 0
+            },
+            "padder": {
+                "name": "dp",
+                "params": {
+                    "pred_len": 5,
+                    "pred_cols": [
+                        "lng",
+                        "lat"
+                    ]
+                }
+            },
+            "config": {
+                "num_epoch": 20,
+                "lr": 0.001,
+                "ft_encoder": true,
+                "patience": 5
+            }
+        },
+        "test": {
+            "save": true,
+            "task": "destination_prediction",
+            "dataloader": {
+                "batch_size": 128,
+                "num_workers": 0
+            },
+            "padder": {
+                "name": "dp",
+                "params": {
+                    "pred_len": 5,
+                    "pred_cols": [
+                        "lng",
+                        "lat"
+                    ]
+                }
+            }
+        }
+    }
+]
